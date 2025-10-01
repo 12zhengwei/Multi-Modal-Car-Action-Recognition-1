@@ -1,0 +1,10 @@
+# Dual Modality (RGB + KIR) Configuration
+
+data:
+  modality: rgb_kir
+
+model:
+  fusion: late  # Default fusion for dual modality
+
+save:
+  out_dir: outputs/split0_rgbkir

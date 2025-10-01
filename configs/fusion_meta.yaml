@@ -1,0 +1,19 @@
+# META Fusion Configuration
+# Motion and Multi-View Excitation with Temporal Aggregation
+
+model:
+  fusion: meta
+  fusion_config:
+    meta:
+      motion_kernel_size: 3
+      temporal_groups: 4
+      excitation_reduction: 4
+      use_motion_excitation: true
+      use_multiview_excitation: true
+      use_temporal_aggregation: true
+
+data:
+  modality: rgb_kir
+
+save:
+  out_dir: outputs/split0_meta_rgbkir

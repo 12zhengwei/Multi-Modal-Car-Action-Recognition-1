@@ -1,0 +1,15 @@
+# Late Fusion Configuration
+# Inherits from default.yaml, only overrides fusion-specific settings
+
+model:
+  fusion: late
+  fusion_config:
+    late:
+      learnable_weights: true
+      fusion_method: logits  # logits | prob | weighted
+
+data:
+  modality: rgb_kir
+
+save:
+  out_dir: outputs/split0_late_rgbkir

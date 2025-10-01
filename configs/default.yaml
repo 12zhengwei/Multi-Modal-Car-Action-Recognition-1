@@ -1,0 +1,139 @@
+# Default configuration for Multi-Modal Action Recognition
+
+# Data configuration
+data:
+  root_dir: /path/to/root_dir  # Root directory containing split0, split1, split2
+  split: split0  # Which split to use: split0, split1, or split2
+  modality: rgb_kir  # Options: rgb | kir | rgb_kir
+  train_index: cache/split0_train.csv
+  val_index: cache/split0_val.csv
+  test_index: cache/split0_test.csv
+  num_frames: 16  # Number of frames per clip
+  frame_stride: 2  # Stride for frame sampling
+  resolution: 224  # Input resolution (H, W)
+  num_workers: 4  # Number of data loading workers
+  pin_memory: true
+  
+  # Data augmentation (training)
+  augmentation:
+    horizontal_flip: 0.5
+    color_jitter: true
+    brightness: 0.2
+    contrast: 0.2
+    saturation: 0.2
+    hue: 0.1
+    scale_range: [0.8, 1.0]
+    
+  # Normalization (ImageNet default)
+  normalize:
+    rgb_mean: [0.485, 0.456, 0.406]
+    rgb_std: [0.229, 0.224, 0.225]
+    kir_mean: [0.5, 0.5, 0.5]  # For pseudo-3-channel KIR
+    kir_std: [0.5, 0.5, 0.5]
+
+# Model configuration
+model:
+  backbone: uniformerv2
+  num_classes: 34  # Number of action classes
+  
+  # UniFormerV2 architecture
+  uniformerv2:
+    depth: [5, 8, 20, 7]  # Depth of each stage
+    embed_dim: [64, 128, 320, 512]  # Embedding dimensions
+    head_dim: 64
+    mlp_ratio: 4.0
+    qkv_bias: true
+    drop_rate: 0.0
+    attn_drop_rate: 0.0
+    drop_path_rate: 0.1
+    use_checkpoint: false
+    checkpoint_num: [0, 0, 0, 0]
+    
+  # Fusion strategy: early | late | meta
+  fusion: meta
+  
+  # Fusion-specific settings
+  fusion_config:
+    early:
+      bottleneck_dim: 192  # 1x1 conv bottleneck dimension
+      fusion_layer: 0  # Which layer to fuse (0 = input level)
+    late:
+      learnable_weights: true  # Use learnable fusion weights
+      fusion_method: logits  # logits | prob | weighted
+    meta:
+      motion_kernel_size: 3
+      temporal_groups: 4
+      excitation_reduction: 4
+      use_motion_excitation: true
+      use_multiview_excitation: true
+      use_temporal_aggregation: true
+
+# Training configuration
+train:
+  epochs: 50
+  batch_size: 8
+  accumulation_steps: 1  # Gradient accumulation
+  
+  # Optimizer
+  optimizer: adamw
+  lr: 2e-4
+  weight_decay: 0.05
+  betas: [0.9, 0.999]
+  eps: 1e-8
+  
+  # Learning rate scheduler
+  scheduler: cosine
+  warmup_epochs: 5
+  warmup_lr: 1e-6
+  min_lr: 1e-6
+  
+  # Regularization
+  label_smoothing: 0.1
+  grad_clip: 20.0
+  
+  # Mixed precision training
+  amp: true
+  
+  # Checkpoint and logging
+  save_freq: 1  # Save every N epochs
+  log_freq: 10  # Log every N iterations
+  val_freq: 1  # Validate every N epochs
+  early_stopping_patience: 10  # Early stopping patience (epochs)
+  
+  # Resume training
+  resume: null  # Path to checkpoint to resume from
+  
+  # Distributed training
+  distributed: false
+  world_size: 1
+  rank: 0
+  dist_backend: nccl
+  dist_url: env://
+
+# Validation/Testing configuration
+test:
+  batch_size: 16
+  num_clips: 4  # Number of clips for multi-clip testing
+  num_crops: 1  # Number of spatial crops
+  
+# Inference configuration
+inference:
+  batch_size: 1
+  save_visualizations: true
+  output_format: json  # json | csv
+
+# Save paths
+save:
+  out_dir: outputs/split0_meta_rgbkir
+  checkpoint_dir: checkpoints
+  log_dir: logs
+  export_dir: exports
+
+# Device configuration
+device:
+  cuda: true
+  cudnn_benchmark: true
+  cudnn_deterministic: false
+
+# Random seed
+seed: 42

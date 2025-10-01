@@ -1,0 +1,15 @@
+# Early Fusion Configuration
+# Inherits from default.yaml, only overrides fusion-specific settings
+
+model:
+  fusion: early
+  fusion_config:
+    early:
+      bottleneck_dim: 192
+      fusion_layer: 0  # 0 = input level, 1+ = after specific stages
+
+data:
+  modality: rgb_kir
+
+save:
+  out_dir: outputs/split0_early_rgbkir

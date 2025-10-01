@@ -1,0 +1,10 @@
+# KIR-only Configuration
+
+data:
+  modality: kir
+
+model:
+  fusion: none  # No fusion needed for single modality
+
+save:
+  out_dir: outputs/split0_kir
