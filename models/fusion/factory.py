@@ -10,6 +10,7 @@ import torch.nn as nn
 from .early import EarlyFusionModel
 from .late import LateFusionModel
 from .meta import METAFusionModel
+from .cmcf import CMCFFusionModel
 
 
 def create_fusion_model(
@@ -82,6 +83,23 @@ def create_fusion_model(
             use_motion_excitation=fusion_config.get('use_motion_excitation', True),
             use_multiview_excitation=fusion_config.get('use_multiview_excitation', True),
             use_temporal_aggregation=fusion_config.get('use_temporal_aggregation', True),
+        )
+        return model
+    
+    elif fusion_type == 'cmcf':
+        # CMCF fusion - separate backbones, shared head
+        head = list(heads.values())[0]
+        fusion_config = config.get('cmcf', {})
+        
+        # Get fusion dimension from backbone output
+        fusion_dim = get_backbone_output_dim(list(backbones.values())[0])
+        
+        model = CMCFFusionModel(
+            backbones=backbones,
+            head=head,
+            fusion_dim=fusion_dim,
+            enhancement_reduction=fusion_config.get('enhancement_reduction', 8),
+            attention_heads=fusion_config.get('attention_heads', 4),
         )
         return model
     

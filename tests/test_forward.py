@@ -150,6 +150,47 @@ def test_dual_modality_meta_fusion():
     print(f"  ✓ Output shape: {output.shape}")
 
 
+def test_dual_modality_cmcf_fusion():
+    """Test forward pass for CMCF fusion model."""
+    print("Testing CMCF fusion forward pass...")
+    
+    # Load config
+    config_path = project_root / 'configs' / 'default.yaml'
+    config = load_config(str(config_path))
+    
+    # Override settings for CMCF fusion testing
+    config['data']['modality'] = 'rgb_kir'
+    config['model']['fusion'] = 'cmcf'
+    if 'cmcf' not in config.get('fusion', {}):
+        config['fusion'] = config.get('fusion', {})
+        config['fusion']['cmcf'] = {
+            'enhancement_reduction': 8,
+            'attention_heads': 4,
+        }
+    
+    # Build model
+    model = build_model(config)
+    model.eval()
+    
+    # Create dummy input
+    batch_size = 2
+    num_frames = 16
+    resolution = 224
+    dummy_input = {
+        'rgb': torch.randn(batch_size, 3, num_frames, resolution, resolution),
+        'kir': torch.randn(batch_size, 3, num_frames, resolution, resolution),
+    }
+    
+    # Forward pass
+    with torch.no_grad():
+        output = model(dummy_input)
+    
+    # Check output shape
+    num_classes = config['model']['num_classes']
+    assert output.shape == (batch_size, num_classes)
+    print(f"  ✓ Output shape: {output.shape}")
+
+
 def test_model_parameters():
     """Test model parameter counting."""
     print("Testing model parameter counting...")
@@ -214,6 +255,7 @@ def main():
         test_dual_modality_early_fusion,
         test_dual_modality_late_fusion,
         test_dual_modality_meta_fusion,
+        test_dual_modality_cmcf_fusion,
         test_model_parameters,
         test_loss_computation,
     ]

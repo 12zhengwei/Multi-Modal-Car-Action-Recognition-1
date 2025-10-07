@@ -1,0 +1,15 @@
+# CMCF Fusion Configuration
+# Cross-Modal Complementary Fusion for RGB and KIR modalities
+
+model:
+  fusion: cmcf
+  fusion_config:
+    cmcf:
+      enhancement_reduction: 8
+      attention_heads: 4
+
+data:
+  modality: rgb_kir
+
+save:
+  out_dir: outputs/split0_cmcf_rgbkir
