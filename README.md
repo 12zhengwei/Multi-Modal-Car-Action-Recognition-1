@@ -11,10 +11,11 @@ Multi-Modal Fusion for Action Recognition in Car Cabin Environment using PyTorch
 This project implements a complete, production-ready multi-modal action recognition system for car cabin environments. It supports:
 
 - **Multi-Modal Learning**: RGB and KIR (infrared) video modalities
-- **Three Fusion Strategies**:
+- **Four Fusion Strategies**:
   - **Early Fusion**: Input/feature-level fusion with channel bottleneck
   - **Late Fusion**: Decision-level fusion with learnable weights
   - **META Fusion**: Advanced fusion with Motion Excitation, Multi-View Excitation, and Temporal Aggregation
+  - **CMCF Fusion**: Cross-Modal Complementary Fusion with modality-specific enhancement and adaptive weighting
 - **UniFormerV2 Backbone**: State-of-the-art video transformer with local and global attention
 - **34 Action Classes**: Comprehensive action categories for car cabin activities
 - **Production Features**: Mixed precision training (AMP), distributed training (DDP), model export (ONNX, TorchScript)
@@ -31,7 +32,7 @@ This project implements a complete, production-ready multi-modal action recognit
 ### Model Architecture
 - ✅ UniFormerV2 hierarchical video transformer
 - ✅ Local and global attention mechanisms
-- ✅ Three fusion strategies with clean interfaces
+- ✅ Four fusion strategies with clean interfaces
 - ✅ Configurable model depth and width
 - ✅ Support for single and dual modality training
 

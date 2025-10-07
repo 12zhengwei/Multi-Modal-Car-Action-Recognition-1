@@ -166,6 +166,125 @@ KIR Video ──→ Backbone₂ ──→ Features₂ ──┘   Fused Features
    - Grouped 1D convolutions
    - Multi-scale temporal receptive fields
 
+**META Fusion 详细介绍 (Detailed Introduction)**:
+
+META Fusion是一种先进的多模态融合策略，专门设计用于处理RGB和KIR（近红外）视频模态。该方法通过三个核心模块实现高效的特征融合：
+
+**1. 运动激励模块 (Motion Excitation Module)**
+- **原理**：通过计算相邻帧之间的差分来捕获时序运动模式
+- **实现**：
+  - 计算帧间差分：`diff = frame(t+1) - frame(t)`
+  - 使用3D卷积提取运动特征，包含时间维度和空间维度
+  - 通过Sigmoid门控机制生成运动权重
+  - 将运动权重应用于原始特征：`enhanced = features × motion_weights`
+- **作用**：强化动作相关的时序信息，抑制静态背景
+
+**2. 多视角激励模块 (Multi-View Excitation Module)**
+- **原理**：利用跨模态注意力机制自适应地融合不同模态的信息
+- **实现**：
+  - 全局平均池化获取模态间的全局上下文
+  - 通过1×1×1卷积计算跨模态注意力权重
+  - Softmax归一化确保模态权重和为1
+  - 为每个模态生成特定的门控信号
+  - 结合注意力权重和门控信号调节特征：`modality_out = modality × gate × attention`
+- **作用**：
+  - RGB模态捕获丰富的外观和颜色信息
+  - KIR模态在低光照条件下提供稳定的热信息
+  - 自适应权重根据场景条件动态调整两种模态的贡献
+
+**3. 时序聚合模块 (Temporal Aggregation Module)**
+- **原理**：通过分组卷积实现多尺度时序建模
+- **实现**：
+  - 使用多个并行的深度可分离3D卷积（仅在时间维度）
+  - 每组捕获不同尺度的时序依赖关系
+  - 将所有组的输出拼接后通过1×1×1卷积聚合
+  - 添加残差连接保留原始时序信息
+- **作用**：
+  - 建立长短期时序依赖
+  - 捕获不同时间尺度的动作模式
+  - 增强模型对动作持续时间变化的鲁棒性
+
+**整体流程**：
+1. RGB和KIR视频分别通过独立的骨干网络提取特征
+2. 每个模态的特征经过运动激励增强时序信息
+3. 多视角激励模块进行跨模态信息交互和自适应加权
+4. 拼接增强后的多模态特征
+5. 时序聚合模块建模时序依赖关系
+6. 最终通过1×1×1卷积融合为统一特征表示
+7. 共享分类头输出动作类别
+
+**优势**：
+- 充分利用RGB和KIR的互补特性
+- 运动激励强化动作相关的时序特征
+- 跨模态注意力实现自适应融合
+- 多尺度时序建模增强时序推理能力
+- 端到端训练，融合策略可学习优化
+
+#### CMCF Fusion (`models/fusion/cmcf.py`)
+
+```
+RGB Video ──→ Backbone₁ ──→ Features₁ ──┐
+                                         │
+                                         ├─→ Modality-Specific Enhancement
+                                         │       ↓
+                                         ├─→ Complementary Attention
+                                         │       ↓
+                                         ├─→ Adaptive Weighting
+                                         │       ↓
+KIR Video ──→ Backbone₂ ──→ Features₂ ──┘   Fused Features ──→ Head
+```
+
+**Components**:
+
+1. **Modality-Specific Enhancement**:
+   - RGB-specific: Color and texture enhancement
+   - KIR-specific: Thermal pattern enhancement
+   - Channel attention for each modality
+
+2. **Complementary Attention**:
+   - Cross-modal query-key-value attention
+   - RGB features query KIR features and vice versa
+   - Captures complementary information
+
+3. **Adaptive Weighting**:
+   - Reliability estimation for each modality
+   - Dynamic fusion weights based on scene conditions
+   - Combines enhanced features with learned weights
+
+**CMCF Fusion 详细介绍 (Detailed Introduction)**:
+
+CMCF（Cross-Modal Complementary Fusion，跨模态互补融合）是一种专门为RGB和KIR视频设计的融合策略，充分利用两种模态的互补特性。
+
+**设计理念**：
+- RGB模态：提供丰富的颜色、纹理和外观信息，在光照良好时表现优异
+- KIR模态：提供热辐射和低光照信息，在暗光或逆光条件下稳定可靠
+- 互补融合：动态平衡两种模态的贡献，根据场景条件自适应调整
+
+**核心模块**：
+
+**1. 模态特定增强 (Modality-Specific Enhancement)**
+- 为RGB和KIR分别设计专门的增强网络
+- RGB增强：强化颜色对比度和纹理细节
+- KIR增强：强化热模式和边缘信息
+- 使用通道注意力机制选择性增强有用特征
+
+**2. 互补注意力 (Complementary Attention)**
+- RGB特征查询KIR特征，获取热信息补充
+- KIR特征查询RGB特征，获取外观细节
+- 双向交互确保信息充分交换
+- 捕获模态间的互补关系
+
+**3. 自适应加权 (Adaptive Weighting)**
+- 评估每个模态在当前场景下的可靠性
+- 基于特征统计量（均值、方差）估计质量
+- 动态生成融合权重
+- 在光照良好时侧重RGB，暗光条件下侧重KIR
+
+**适用场景**：
+- 车载环境中光照条件变化大
+- 需要在不同时段（白天/夜晚）保持稳定性能
+- RGB和KIR具有明显的互补特性
+
 ### 4. Training Pipeline
 
 #### Optimizer: AdamW
@@ -293,6 +412,7 @@ Mean Class Accuracy = Average of all per-class accuracies
 | Early | 1 | 1 | ~50M |
 | Late | 2 | 2 | ~100M |
 | META | 2 | 1 | ~105M |
+| CMCF | 2 | 1 | ~104M |
 
 ## Performance Optimization
 
