@@ -1,0 +1,17 @@
+# CMCF Fusion Configuration
+# Cross-Modal Complementary Fusion with modality-specific enhancement and adaptive weighting
+
+model:
+  fusion: cmcf
+  fusion_config:
+    cmcf:
+      enhancement_hidden_channels: null  # null = same as in_channels
+      attention_reduction: 4
+      weighting_hidden_dim: 64
+      dropout: 0.1
+
+data:
+  modality: rgb_kir
+
+save:
+  out_dir: outputs/split0_cmcf_rgbkir

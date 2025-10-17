@@ -32,7 +32,7 @@ This document provides a detailed overview of the system architecture for the Mu
 │                       ▼                                      │
 │  ┌──────────────────────────────────────────────────┐       │
 │  │          Fusion Strategy                         │       │
-│  │  (Early / Late / META)                           │       │
+│  │  (Early / Late / META / CMCF)                    │       │
 │  └──────────────────────────────────────────────────┘       │
 │                       │                                      │
 │                       ▼                                      │
@@ -166,6 +166,37 @@ KIR Video ──→ Backbone₂ ──→ Features₂ ──┘   Fused Features
    - Grouped 1D convolutions
    - Multi-scale temporal receptive fields
 
+#### CMCF Fusion (`models/fusion/cmcf.py`)
+
+```
+RGB Video ──→ Backbone₁ ──→ Features₁ ──┐
+                                         │
+                                         ├─→ Modality-Specific Enhancement
+                                         │       ↓
+                                         ├─→ Complementary Attention
+                                         │       ↓
+                                         ├─→ Adaptive Weighting
+                                         │       ↓
+KIR Video ──→ Backbone₂ ──→ Features₂ ──┘   Fused Features ──→ Head
+```
+
+**Components**:
+
+1. **Modality-Specific Enhancement**:
+   - Learns modality-specific representations
+   - Channel and spatial attention mechanisms
+   - Residual connections for stability
+
+2. **Complementary Attention**:
+   - Identifies complementary information between modalities
+   - Cross-modal attention for enhancement
+   - Per-modality complementary gates
+
+3. **Adaptive Weighting**:
+   - Content-based dynamic fusion weights
+   - Global context extraction
+   - Learnable weight prediction network
+
 ### 4. Training Pipeline
 
 #### Optimizer: AdamW
@@ -293,6 +324,7 @@ Mean Class Accuracy = Average of all per-class accuracies
 | Early | 1 | 1 | ~50M |
 | Late | 2 | 2 | ~100M |
 | META | 2 | 1 | ~105M |
+| CMCF | 2 | 1 | ~110M |
 
 ## Performance Optimization
 
