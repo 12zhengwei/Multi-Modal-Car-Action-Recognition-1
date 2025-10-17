@@ -50,9 +50,9 @@ class ModalitySpecificEnhancement(nn.Module):
         # Channel attention for feature recalibration
         self.channel_attention = nn.Sequential(
             nn.AdaptiveAvgPool3d(1),
-            nn.Conv3d(in_channels, in_channels // 4, kernel_size=1),
+            nn.Conv3d(in_channels, max(in_channels // 4, 1), kernel_size=1),
             nn.ReLU(inplace=True),
-            nn.Conv3d(in_channels // 4, in_channels, kernel_size=1),
+            nn.Conv3d(max(in_channels // 4, 1), in_channels, kernel_size=1),
             nn.Sigmoid(),
         )
         
@@ -248,7 +248,7 @@ class AdaptiveWeighting(nn.Module):
         # Apply weights to modalities
         weighted_modalities = []
         for i, modality in enumerate(modalities):
-            weight = weights[:, i:i+1, None, None, None, None]  # (B, 1, 1, 1, 1)
+            weight = weights[:, i:i+1, None, None, None]  # (B, 1, 1, 1, 1) for 5D tensors
             weighted = modality * weight
             weighted_modalities.append(weighted)
         
@@ -412,7 +412,7 @@ class CMCFFusionModel(nn.Module):
         """
         # Extract features from each modality
         features = []
-        for modality in ['rgb', 'kir']:
+        for modality in self.backbones.keys():
             if modality in inputs and inputs[modality] is not None:
                 feat = self.backbones[modality](inputs[modality])
                 features.append(feat)
