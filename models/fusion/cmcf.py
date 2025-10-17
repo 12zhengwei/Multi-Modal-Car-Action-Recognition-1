@@ -248,7 +248,8 @@ class AdaptiveWeighting(nn.Module):
         # Apply weights to modalities
         weighted_modalities = []
         for i, modality in enumerate(modalities):
-            weight = weights[:, i:i+1, None, None, None]  # (B, 1, 1, 1, 1) for 5D tensors
+            # Shape: (B, 1, 1, 1, 1) broadcasts to (B, C, T, H, W)
+            weight = weights[:, i:i+1, None, None, None]
             weighted = modality * weight
             weighted_modalities.append(weighted)
         
