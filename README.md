@@ -6,6 +6,8 @@ Multi-Modal Fusion for Action Recognition in Car Cabin Environment using PyTorch
 [![PyTorch 2.0+](https://img.shields.io/badge/pytorch-2.0+-orange.svg)](https://pytorch.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
+> 📊 **New Addition**: This repository now includes a PowerPoint presentation generator for the Jinling Car Purchase Subsidy Platform project. See [PRESENTATION_README.md](PRESENTATION_README.md) for details.
+
 ## 📋 Overview
 
 This project implements a complete, production-ready multi-modal action recognition system for car cabin environments. It supports:
